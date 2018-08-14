@@ -12,7 +12,7 @@ U=1;    % no mutations and types
 H=[3/4,0,1/4]';   % the process is subcritical
 % there is no immigration and no point process in this example
 m=(0:2)*H;      % mean number of children
-Z_mean_true=m.^((0:h:T)./mean_lifelength./sqrt(2));     % the theoretical solution
+Z_mean_true=exp((m-1)*(0:h:T)./mean_lifelength);     % the theoretical solution
 
 % we are not interested in the age structure, as it is trivial in this case
 [Z, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0);

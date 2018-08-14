@@ -1,4 +1,5 @@
 function [Z, Z_types, Z_ages]=BranchingProcessSimulator(sim_num, T, h, draw_S, draw_H, draw_U, draw_Z_0, varargin)
+% Written in Matlab
 % AUTHOR: Plamen Trayanov
 % Faculty of Mathematics and Informatics
 % Sofia University "St. Kliment Ohridski"

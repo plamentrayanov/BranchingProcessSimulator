@@ -26,4 +26,4 @@ Restrictions:
 - Returning the population count by age as an output may require a lot of computer memory (more than a 100 GB RAM in some cases);
 
 Cite As:
-Plamen Trayanov (2018). Branching Process Simulator (https://www.github.com/plamentrayanov/BranchingProcessSimulator), GitHub. Retrieved <date>, 2018. 
+Plamen Trayanov (2018). Branching Process Simulator (https://www.github.com/plamentrayanov/BranchingProcessSimulator), GitHub. 

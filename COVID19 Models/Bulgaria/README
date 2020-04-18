@@ -1,0 +1,2 @@
+If you want to update the data, first download the newest data from https://opendata.ecdc.europa.eu/covid19/casedistribution/csv  and put it in data.csv file.
+The example is country specific, so for another country you need to change some of the parameters of the model!

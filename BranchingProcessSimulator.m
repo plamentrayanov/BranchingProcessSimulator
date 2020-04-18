@@ -1,20 +1,22 @@
-function [Z, Z_types, Z_ages]=BranchingProcessSimulator(sim_num, T, h, draw_S, draw_H, draw_U, draw_Z_0, varargin)
+function [Z, Z_types, Z_ages, Y, Y_types]=BranchingProcessSimulator(sim_num, T, h, draw_S, draw_H, draw_U, draw_Z_0, varargin)
 % Written in Matlab
-% AUTHOR: Plamen Trayanov
-% Faculty of Mathematics and Informatics
-% Sofia University "St. Kliment Ohridski"
+% AUTHOR: Plamen Trayanov, PhD
 %
 %
-% [Z, Z_TYPES, Z_AGES]=simulate_BP(SIM_NUM, T, H, DRAW_S, DRAW_H, DRAW_U, DRAW_Z_0, DRAW_MU, DRAW_IM, APPROX_LIMIT) simulates a
+% [Z, Z_TYPES, Z_AGES, Y, Y_TYPES]=simulate_BP(SIM_NUM, T, H, DRAW_S, DRAW_H, DRAW_U, DRAW_Z_0, DRAW_MU, DRAW_IM, APPROX_LIMIT) simulates a
 % branching process and returns the number of all particles - Z and the number of particles by type - Z_TYPES.
 % Z is a matrix of size NUM_SIM x T/H + 1, containing the simulation paths (the total number of particles for each
 % moment of time) in its rows. Z_TYPES is a 3D matrix of size NUM_SIM x N_TYPES x T/H + 1, where N_TYPES is the number
 % of types in the branching process. It contains the simulation paths differentiated by types. The sum of all types is
 % equal to the total number of particles, stored in Z. Z_AGES contains the simulated age structure of the population 
 % by type for every moment of time. It is a 4D matrix of size SIM_NUM x N_AGES x N_TYPES x (T/H+1), where N_AGES is the 
-% number of discrete ages, used in the simulation. 
-% Note: As a 4D matrix, it might require a lot of RAM. If the age structure is not requested as an output, then it is
+% number of discrete ages, used in the simulation. Y is the same size as Z, containing the total progeny of the process (including immigration).
+% Y_TYPES is the same size as Z_TYPES, containing the total progeny of the process by types.
+% Note: As a 4D matrix, Z_AGES might require a lot of RAM. If the age structure is not requested as an output, then it is
 % not stored, to save RAM.
+%
+% To stop Z_AGES from being calculated as it requires more RAM, add to the arguments: ..., 'GetAgeStructure', false)
+% Default value: true.
 %
 % SIM_NUM is the number of simulations to perform.
 %
@@ -118,15 +120,18 @@ function [Z, Z_types, Z_ages]=BranchingProcessSimulator(sim_num, T, h, draw_S, d
 %% input parser, basic check and adjustment of the input format
 Results=customInputParser(sim_num, T, h, draw_S, draw_H, draw_U, draw_Z_0, varargin{:});
 
-getAgeStructure=(nargout==3);   % determines whether the age structure is requested or not
+getAgeStructure=Results.GetAgeStructure;   % determines whether the age structure is requested or not
 T=ceil(T/h)*h;      % make T divisible by h
 
 %% perform the simulation using all cores
 n_types=size(Results.draw_S(),2);    % the number of types
 Z_types=zeros(sim_num, n_types, T/h+1);     % the branching process by types - sum of all individuals by types at time [0, T].
+Y_types=Z_types;     % the branching process by types - sum of all individuals by types at time [0, T].
 
 if getAgeStructure      % setting it to false, saves RAM, as Z_age requires a lot of memory
     Z_ages=zeros([sim_num, size(Results.draw_S())]);     % population count by [sim_num, age, type, time]
+else
+    Z_ages=[];
 end
 parfor ind=1:sim_num
     % for every simulation path, before simulating the branching process, generate simulation paths of the probability 
@@ -151,12 +156,15 @@ parfor ind=1:sim_num
         N(1,:,1)=Z_0;   % then assume the given initial population is of age 0
     else
         N(:,:,1)=Z_0;   % then load the given initial population age structure
-    end
+    end   
+    BirthsByTypesTotal = zeros(size(N,2), size(N,3));   % Total births by types + immigration, i.e. defines total progeny of the process, usually denoted by Y
+    BirthsByTypesTotal(:,1) = sum(N(:,:,1));
     
     for t=1:T/h       % go through time
         if ~isempty(Results.draw_Im)  % add immigration at the beginning of the time interval 
             % (this also allows the initial population to be defined as immigrants at time 0)
             N(:,:,t)=N(:,:,t)+Im(:,:,t);
+            BirthsByTypesTotal = BirthsByTypesTotal + sum(N(:,:,t));
         end
         % if there is at least one particle of any type at time t, simulate for t+h
         if any(any(N(:,:,t))) || ~isempty(Results.draw_Im)
@@ -173,8 +181,10 @@ parfor ind=1:sim_num
                             % during the life of the particles
                             births=mnrnd_large(binornd_large(N(i,j,t), mu(i,j,t)*h, Results.approx_limit), H(:,j,t)',1, Results.approx_limit)*(0:(length(H(:,j,t))-1))';
                         end
-                        N(i+1,j,t+1)=N(i,j,t)-deaths;   % the ones that survived get to get older by h
-                        N(1,:,t+1)=N(1,:,t+1) + mnrnd_large(births, U(:,j,t)',1, Results.approx_limit);     % simulate the mutations to other types
+                        N(i+1,j,t+1)=N(i,j,t)-deaths;   % the ones that survived get to be older by h
+                        births_by_types = mnrnd_large(births, U(:,j,t)',1, Results.approx_limit);
+                        N(1,:,t+1)=N(1,:,t+1) + births_by_types;     % simulate the mutations to other types
+                        BirthsByTypesTotal(j, t) = BirthsByTypesTotal(j, t) + births_by_types;
                     end
                 end
             end
@@ -187,8 +197,10 @@ parfor ind=1:sim_num
         Z_ages(ind, :, :, :)=N;
     end
     Z_types(ind, :, :)=sum(N,1);  % sum of all individuals by type (no age information)
+    Y_types(ind, :, :)=cumsum(BirthsByTypesTotal);      % total progeny / total births by types, including immigration
 end
 Z=squeeze(sum(Z_types, 2));     % sum of all individuals, no age or type information
+Y=squeeze(sum(Y_types, 2));     % sum of all individuals, no age or type information
 end
 
 %% private functions used by the simulator
@@ -211,6 +223,7 @@ p.addOptional('draw_mu', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0)) 
 p.addOptional('draw_Im', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0 & mod(x(:),1)==0)) || ...
     (isa(x,'function_handle') && isnumeric(x()))));
 p.addOptional('approx_limit', 20, @(x)(isnumeric(x) && isscalar(x) && x>0)); % check if T is a positive number
+p.addOptional('GetAgeStructure', true, @islogical); % check if T is a positive number
 
 p.parse(sim_num, T, h, draw_S, draw_H, draw_U, draw_Z_0, varargin{:});
 Results = p.Results;

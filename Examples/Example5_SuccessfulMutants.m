@@ -34,7 +34,7 @@ H=[q_0/(1+q_0), 0, 1/(1+q_0); 1-0.375, 0, 0.375]';  % type 1 is subcritical, doo
 u=0.2;      % mutation probability from type 1 to type 0
 U=[1 0; u, 1-u]';    % type 0 is not mutating
 
-[~, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0);
+[~, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, 'GetAgeStructure', false);
 
 % calculating however the distribution P(T>t) from this simulation is troublesome, as we do not get as output 
 % which mutants are successful and which are not. We can approximate that if a simulated type 0 population is non-zero 
@@ -72,7 +72,7 @@ u=0.2;  % mutation probability
 U=[1 0 0; 0 1 0; (1-q_0)*u, q_0*u, 1-u]';
 
 % lets simulate now the 3-type branching process
-[~, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0);
+[~, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, 'GetAgeStructure', false);
 
 % get the finite times of occurence of successful mutants
 time_of_occurance=cellfun(@(x) find(x, 1, 'first'), num2cell(squeeze(Z_types(sum(Z_types(:, 1, :), 3)>0,1,:)), 2))*h;

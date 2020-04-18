@@ -13,7 +13,7 @@ H=[1/3,0,2/3; 3/4,0,1/4]';      % type 1 is supercritical, type 2 - subcritical,
 % there is no immigration and no point process in this example
 
 % we are not interested in the age structure, as it is trivial in this case
-[Z, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0);
+[Z, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, 'GetAgeStructure', false);
 [Z_mean, Z_lower, Z_upper, Z_median]=confInterval(Z, 0.10);
 
 %% Shows the simulations with confidence intervals

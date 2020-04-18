@@ -15,7 +15,7 @@ m=(0:2)*H;      % mean number of children
 Z_mean_true=exp((m-1)*(0:h:T)./mean_lifelength);     % the theoretical solution
 
 % we are not interested in the age structure, as it is trivial in this case
-[Z, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0);
+[Z, Z_types] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, 'GetAgeStructure', false);
 [Z_mean_100, Z_lower_100, Z_upper_100, Z_median_100]=confInterval(Z(1:100,:), 0.10);
 [Z_mean_1000, Z_lower_1000, Z_upper_1000, Z_median_1000]=confInterval(Z(1:1000,:), 0.10);
 [Z_mean_10000, Z_lower_10000, Z_upper_10000, Z_median_10000]=confInterval(Z(1:10000,:), 0.10);

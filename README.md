@@ -24,6 +24,3 @@ Restrictions:
 - The birth, death distributions, mutation probabilities and immigration are independent with each other and with the branching process itself. So the simulation does not include the class of "controlled branching processes", although it could be extended to suit the specific needs. Depending on the type of controlled process and the dependence on the age structure at previous times, this task could require a lot of RAM;
 - It considers only immigration, as emigration is naturally dependent on the population count and age structure and could be defined in a variety of ways.
 - Returning the population count by age as an output may require a lot of computer memory (more than a 100 GB RAM in some cases);
-
-Cite As:
-Plamen Trayanov (2018). Branching Process Simulator (https://www.github.com/plamentrayanov/BranchingProcessSimulator), GitHub. 

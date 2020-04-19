@@ -3,12 +3,13 @@
 % It includes 3 scenarios for the future R0
 
 %% load the branching process simulator
-addpath('../../')  % adds the function BranchingProcessSimulator to the path
+addpath('../../')   % adds the function BranchingProcessSimulator to the path
+addpath('../')      % adds the functions confInterval and readCSVData to the path
 
 %% read and plot the data for the chosen country
 % save the data from: https://opendata.ecdc.europa.eu/covid19/casedistribution/csv
 % then write in the file data.csv
-[dates, newcases, totalcases] = readCSVData('data.csv', 'Bulgaria');
+[dates, newcases, totalcases] = readCSVData('../data.csv', 'Bulgaria');
 
 %% Build a branching model
 detection_time = 8;     % assumes 2 days after the symptoms develop (on average) the person is tested for corona

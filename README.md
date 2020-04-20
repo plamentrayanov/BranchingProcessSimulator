@@ -1,5 +1,5 @@
 # BranchingProcessSimulator
-LATEST UPDATE: Includes a branching process simulation example for the COVID-19 (SARS-CoV-2) epidemics. The branching processes are alternative to the classical epidemics model like SEIR. The examples so far include models for Italy and Bulgaria.
+LATEST UPDATE: Includes a branching process simulation example for the COVID-19 (SARS-CoV-2) epidemics. The branching processes are alternative to the classical epidemics model like SEIR. The examples so far include models for Italy, Sweden and Bulgaria.
 
 Simulates multi-type Galton-Watson, Bellman-Harris and Crump-Mode-Jagers branching processes with immigration - in constant, varying or random environment. The process is allowed to start from a random number of particles on different ages. The mutation probabilities are also allowed to be random. The features and restrictions of the simulation method are described below:
 

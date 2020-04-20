@@ -9,9 +9,9 @@ addpath('../')          % adds the functions confInterval and readCSVData to the
 %% read and plot the data for the chosen country
 % save the data from: https://opendata.ecdc.europa.eu/covid19/casedistribution/csv
 % then write in the file data.csv
-[dates, newcases_hist, totalcases_hist] = readCSVData('../data.csv', 'Italy');
+[dates, newcases_hist, totalcases_hist] = readCSVData('../data.csv', 'Sweden');
 
-% for Italy, the first 3 cases seem controlled and should be excluded as a beginning of the epidemics
+% for Sweden, the first cases seem controlled and should be excluded as a beginning of the epidemics
 % the epidemics starts on :
 ep_start = find(newcases_hist==0, 1, 'last')+1;
 dates=dates(ep_start:end);
@@ -23,7 +23,7 @@ num_days_passed = dates(end)-dates(1) + 1 + detection_time;   % days passed sinc
 
 sim_num=1000;    % number of simulations to perform
 horizon=90;     % horizon in days, after the last available data
-days_before_quarantine=38;      % number of days at the beginning of the process that have a larger R0 value due to less restrictions and social distancing
+%days_before_quarantine=20;      % number of days at the beginning of the process that have a larger R0 value due to less restrictions and social distancing
 T=num_days_passed+horizon;          % the simulation period for the process, from the first infected to horizon 
 h=0.5;          % the time step is 0.5 day
 omega=60;           % no one is infected for more than omega days, technical parameter that does not need to be accurate, smaller -> faster speed, 
@@ -58,7 +58,7 @@ H=[0, 1]';      % people infect only 1 other person when infection happens, no m
 age_struct_pdf=unifpdf(0:h:omega, 0, 5.8)';
 age_struct_prob=age_struct_pdf./(sum(age_struct_pdf));
 
-Z_0=@()(mnrnd(17, age_struct_prob)');
+Z_0=@()(mnrnd(5, age_struct_prob)');
 
 %% MAIN SCENARIO, model of the Point process mu
 % values are taken from the article https://doi.org/10.1101/2020.02.08.20021162
@@ -70,8 +70,8 @@ Z_0=@()(mnrnd(17, age_struct_prob)');
 % distribution of the infection days is taken to be gamma-like and the point process integrates to R0:
 % Expectation = k * theta = 9.63, Variance = k * theta^2 = 3.5707^2 => theta = 3.5707^2 / 9.63 = 1.3240, k = 9.63/1.3240 = 7.2734
 % Here we assume we have 2 periods of the epidemic - before the people started distancing themselves and after.
-% we have a week of adjustment towards the quarantine where R0 transitions from 3.9 to 0.85
-R0 = [linspace(11.9, 2.5, days_before_quarantine/h) linspace(2.5, 0.78, 7/h) ones(1,T/h+1-(7+days_before_quarantine+horizon-detection_time)/h)*0.78 ones(1,(horizon-detection_time)/h)*0.78];
+% R0 is chosen to fit what happened already
+R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.3, 13/h) linspace(2.3, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 19/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*0.9];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
@@ -94,7 +94,7 @@ buildPlots(NewCasesDaily, TotalCasesDaily, ActiveCasesDaily, newcases_hist, date
             'MainScenario', 'No change in R_0 (no change in measures)');
 
 %% OPTIMISTIC SCENARIO model of the Point process mu, Optimistic Scenario, R0 changes from 0.8 to 0.6, from now on
-R0 = [linspace(11.9, 2.5, days_before_quarantine/h) linspace(2.5, 0.78, 7/h) ones(1,T/h+1-(7+days_before_quarantine+horizon-detection_time)/h)*0.78 ones(1,(horizon-detection_time)/h)*0.6];
+R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.3, 13/h) linspace(2.3, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 19/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*0.7];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
@@ -114,7 +114,7 @@ buildPlots(NewCasesDaily_optimistic, TotalCasesDaily_optimistic, ActiveCasesDail
             'OptimisticScenario', 'Decline in R_0 (better results from measures)');
 
 %% PESSIMISTIC SCENARIO model of the Point process mu, Pessimistic Scenario, R0 changes from 0.8 to 1.2, from now on
-R0 = [linspace(11.9, 2.5, days_before_quarantine/h) linspace(2.5, 0.78, 7/h) ones(1,T/h+1-(7+days_before_quarantine+horizon-detection_time)/h)*0.78 ones(1,(horizon-detection_time)/h)*1.2];
+R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.3, 13/h) linspace(2.3, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 19/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*1.3];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);

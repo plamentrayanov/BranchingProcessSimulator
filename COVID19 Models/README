@@ -1,0 +1,7 @@
+The examples for each country are located inside the subdirectories. This root directory contains common functions used by all scripts inside the subdirectories.
+
+To update with the latest data:
+1) go to https://opendata.ecdc.europa.eu/covid19/casedistribution/csv
+2) download the data and replace the file data.csv
+
+Note: Keep in mind that new data will require also to adjust some parameters in order to fit them to the new data. Especially the R0.

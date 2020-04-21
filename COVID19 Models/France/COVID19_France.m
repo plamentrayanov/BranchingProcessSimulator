@@ -112,8 +112,8 @@ NewCases_optimistic = diff(TotalCases_optimistic');
 
 % converts from h period of time to daily period of time
 NewCasesDaily_optimistic = squeeze(sum(reshape(NewCases_optimistic, [2, size(NewCases_optimistic,1)*h, size(NewCases_optimistic,2)])))';
-TotalCasesDaily_optimistic= TotalCases(:, 1:(1/h):T/h);    
-ActiveCasesDaily_optimistic= ActiveCases(:, 1:(1/h):T/h);
+TotalCasesDaily_optimistic= TotalCases_optimistic(:, 1:(1/h):T/h);    
+ActiveCasesDaily_optimistic= ActiveCases_optimistic(:, 1:(1/h):T/h);
 
 % build and save plots
 buildPlots(NewCasesDaily_optimistic, TotalCasesDaily_optimistic, ActiveCasesDaily_optimistic, newcases_hist, dates, horizon, detection_time, ...
@@ -134,8 +134,8 @@ NewCases_pessimistic = diff(TotalCases_pessimistic');
 
 % converts from h period of time to daily period of time
 NewCasesDaily_pessimistic = squeeze(sum(reshape(NewCases_pessimistic, [2, size(NewCases_pessimistic,1)*h, size(NewCases_pessimistic,2)])))';
-TotalCasesDaily_pessimistic= TotalCases(:, 1:(1/h):T/h);    
-ActiveCasesDaily_pessimistic= ActiveCases(:, 1:(1/h):T/h);
+TotalCasesDaily_pessimistic= TotalCases_pessimistic(:, 1:(1/h):T/h);    
+ActiveCasesDaily_pessimistic= ActiveCases_pessimistic(:, 1:(1/h):T/h);
 
 % build and save plots
 buildPlots(NewCasesDaily_pessimistic, TotalCasesDaily_pessimistic, ActiveCasesDaily_pessimistic, newcases_hist, dates, horizon, detection_time, ...

@@ -71,7 +71,7 @@ Z_0=@()(mnrnd(5, age_struct_prob)');
 % Expectation = k * theta = 9.63, Variance = k * theta^2 = 3.5707^2 => theta = 3.5707^2 / 9.63 = 1.3240, k = 9.63/1.3240 = 7.2734
 % Here we assume we have 2 periods of the epidemic - before the people started distancing themselves and after.
 % R0 is chosen to fit what happened already
-R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.3, 13/h) linspace(2.3, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 19/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*0.9];
+R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.35, 13/h) linspace(2.35, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 12/h) linspace(0.9, 0.9, 7/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*0.9];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
@@ -94,7 +94,7 @@ buildPlots(NewCasesDaily, TotalCasesDaily, ActiveCasesDaily, newcases_hist, date
             'MainScenario', 'No change in R_0 (no change in measures)');
 
 %% OPTIMISTIC SCENARIO model of the Point process mu, Optimistic Scenario, R0 changes from 0.8 to 0.6, from now on
-R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.3, 13/h) linspace(2.3, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 19/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*0.7];
+R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.35, 13/h) linspace(2.35, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 12/h) linspace(0.9, 0.9, 7/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*0.7];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
@@ -114,7 +114,7 @@ buildPlots(NewCasesDaily_optimistic, TotalCasesDaily_optimistic, ActiveCasesDail
             'OptimisticScenario', 'Decline in R_0 (better results from measures)');
 
 %% PESSIMISTIC SCENARIO model of the Point process mu, Pessimistic Scenario, R0 changes from 0.8 to 1.2, from now on
-R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.3, 13/h) linspace(2.3, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 19/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*1.3];
+R0 = [linspace(7, 5.5, 19/h) linspace(5.5, 2.35, 13/h) linspace(2.35, 1.9, T/h+1-(24+7+25+horizon-detection_time)/h) linspace(1.9, 0.9, 12/h) linspace(0.9, 0.9, 7/h) linspace(0.9, 0.9, 5/h) ones(1,(horizon-detection_time)/h)*1.3];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);

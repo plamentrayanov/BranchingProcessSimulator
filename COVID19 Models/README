@@ -5,3 +5,4 @@ To update with the latest data:
 2) download the data and replace the file data.csv
 
 Note: Keep in mind that new data will require also to adjust some parameters in order to fit them to the new data. Especially the R0.
+Also, keep in mind that the data file could include more columns in the future and the readCSVData.m function might need to be edited.

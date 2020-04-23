@@ -133,7 +133,7 @@ if getAgeStructure      % setting it to false, saves RAM, as Z_age requires a lo
 else
     Z_ages=[];
 end
-for ind=1:sim_num
+parfor ind=1:sim_num
     % for every simulation path, before simulating the branching process, generate simulation paths of the probability 
     % laws that determine the branching process properties. Later they are used for the branching process simulation.
     S=Results.draw_S();
@@ -164,7 +164,7 @@ for ind=1:sim_num
         if ~isempty(Results.draw_Im)  % add immigration at the beginning of the time interval 
             % (this also allows the initial population to be defined as immigrants at time 0)
             N(:,:,t)=N(:,:,t)+Im(:,:,t);
-            BirthsByTypesTotal = BirthsByTypesTotal + sum(Im(:,:,t));
+            BirthsByTypesTotal(:,t) = BirthsByTypesTotal(:,t) + sum(Im(:,:,t));
         end
         % if there is at least one particle of any type at time t, simulate for t+h
         if any(any(N(:,:,t))) || ~isempty(Results.draw_Im)

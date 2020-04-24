@@ -16,7 +16,7 @@ detection_time = 8;     % assumes 2 days after the symptoms develop (on average)
 num_days_passed = dates(end)-dates(1) + 1 + detection_time;   % days passed since the infection began = days since first case + detection time needed
 
 sim_num=1000;    % number of simulations to perform
-horizon=90;     % horizon in days, after the last available data
+horizon=30;     % horizon in days, after the last available data
 T=num_days_passed+horizon;          % the simulation period for the process, from the first infected to horizon 
 h=0.5;          % the time step is 0.5 day
 omega=60;           % no one is infected for more than omega days, technical parameter that does not need to be accurate, smaller -> faster speed, 
@@ -67,18 +67,37 @@ Z_0=@()(mnrnd(2, age_struct_prob)');
 %R0 = [ ones(1,T/h+1-(7+days_before_quarantine+horizon-detection_time)/h)*0.85 ones(1,(horizon-detection_time)/h)*0.85];
 % T/7    % number of weeks since the beginning
 
-R0 = [linspace(8, 8, 7/h) linspace(8, 5, 7/h) linspace(5, 4, 7/h) linspace(4, 1.5, 7/h) ...
-      linspace(1.5, 0.9, 7/h) linspace(0.9, 0.9, 3*7/h) ...
-      linspace(0.9, 0.9, T/h+1-(8*7+horizon-detection_time)/h) linspace(0.9, 0.9, (horizon-detection_time)/h)];
+R0 = [linspace(8, 7, 7/h) linspace(7, 4.1, 7/h) linspace(4.1, 3.5, 7/h) linspace(3.5, 0.7, 7/h) ...
+      linspace(0.7, 0.55, 7/h) linspace(0.55, 0.6, 7/h) linspace(0.6, 0.6, 4/h) linspace(1.5, 1.8, 10/h) ...
+      linspace(1.8, 1.8, T/h+1-(8*7+horizon-detection_time)/h) linspace(1.8, 1.8, (horizon-detection_time)/h)];
+
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
 mu=@()(mu_matrix);      % the input format for mu is described in the BranchingProcessSimulator.m
 
+% The immigration is actually the number of people who returned home without any symptoms but infected other people. The ones that were diagnosed 
+% get isolated and cannot infect others. Thus, this number is a pure speculation in this model as we do not have data on that. 
+% But it is important to notice that we have 2 main options to fit the model to the data: though R0 and through immigration.
+% Increasing R0 increases the confidence intervals and you may notice that at some point they become too wide to correspond to reality.
+% If they are too wide comparing to the data, then maybe the R0 is smaller, bu we experience immigration. Immigration does not affect the confidence
+% intervals as much as R0. This model combines hypothesis on R0 with hypothesis on Immigration, in order to fit the model to the total cases and new
+% cases, and at the same time fit the model volatility to the observed volatility of new cases. 
+% If you have other hypothesis about R0 and Immigration and how they changed in time, you can try them here in the simulation and see what happens.
+
+Im_age_struct_pdf=unifpdf(0:h:omega, 0, 8)';
+Im_age_struct_prob=Im_age_struct_pdf./(sum(Im_age_struct_pdf));
+Im_matrix=zeros(size(Im_age_struct_pdf,1), 1, T/h+1);
+Im_mass=h*[linspace(0.002, 0, 7/h) linspace(0.002, 0.002, 7/h) linspace(0.002, 0.002, 7/h) linspace(0.002, 0.15, 7/h) ...
+      linspace(0.15, 0.15, 7/h) linspace(0.10, 0.05, 3*7/h) ...
+      linspace(0, 0, T/h+1-(8*7+horizon-detection_time)/h) linspace(0, 0, (horizon-detection_time)/h)];
+
+Im=@()(Im_function(Im_mass, Im_age_struct_prob));
+
 % we can also calculate the age structure of the population which is of interest in this case
 % we can use it to calculate the percentage of people on working age, for example
 % to get the age structure use: [ActiveCases, ActiveCasesByType, ActiveCasesByAge, TotalCases, TotalCasesByTypes] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu, 'GetAgeStructure', true);
-[ActiveCases, ~, ~, TotalCases, ~] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu, 'GetAgeStructure', false);
+[ActiveCases, ~, ~, TotalCases, ~] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu, Im, 'GetAgeStructure', false);
 NewCases = diff(TotalCases');
 % CuredCases = TotalCases - ActiveCases;
 
@@ -92,15 +111,15 @@ buildPlots(NewCasesDaily, TotalCasesDaily, ActiveCasesDaily, newcases_hist, date
             'MainScenario', 'No change in R_0 (no change in measures)');
 
 %% OPTIMISTIC SCENARIO model of the Point process mu, Optimistic Scenario, R0 changes from 0.8 to 0.6, from now on
-R0 = [linspace(8, 8, 7/h) linspace(8, 5, 7/h) linspace(5, 4, 7/h) linspace(4, 1.5, 7/h) ...
-      linspace(1.5, 0.9, 7/h) linspace(0.9, 0.9, 3*7/h) ...
-      linspace(0.9, 0.9, T/h+1-(8*7+horizon-detection_time)/h) linspace(0.7, 0.7, (horizon-detection_time)/h)];
+R0 = [linspace(8, 7, 7/h) linspace(7, 4.1, 7/h) linspace(4.1, 3.5, 7/h) linspace(3.5, 0.7, 7/h) ...
+      linspace(0.7, 0.55, 7/h) linspace(0.55, 0.6, 7/h) linspace(0.6, 0.6, 4/h) linspace(1.5, 1.8, 10/h) ...
+      linspace(1.8, 1.8, T/h+1-(8*7+horizon-detection_time)/h) linspace(0.8, 0.8, (horizon-detection_time)/h)];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
 mu_optimistic=@()(mu_matrix);      % the input format for mu is described in the BranchingProcessSimulator.m
 
-[ActiveCases_optimistic, ~, ~, TotalCases_optimistic, ~] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu_optimistic, 'GetAgeStructure', false);
+[ActiveCases_optimistic, ~, ~, TotalCases_optimistic, ~] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu_optimistic, Im, 'GetAgeStructure', false);
 NewCases_optimistic = diff(TotalCases_optimistic');
 % CuredCases = TotalCases - ActiveCases;
 
@@ -114,15 +133,15 @@ buildPlots(NewCasesDaily_optimistic, TotalCasesDaily_optimistic, ActiveCasesDail
             'OptimisticScenario', 'Decline in R_0 (better results from measures)');
 
 %% PESSIMISTIC SCENARIO model of the Point process mu, Pessimistic Scenario, R0 changes from 0.8 to 1.2, from now on
-R0 = [linspace(8, 8, 7/h) linspace(8, 5, 7/h) linspace(5, 4, 7/h) linspace(4, 1.5, 7/h) ...
-      linspace(1.5, 0.9, 7/h) linspace(0.9, 0.9, 3*7/h) ...
-      linspace(0.9, 0.9, T/h+1-(8*7+horizon-detection_time)/h) linspace(1.1, 1.1, (horizon-detection_time)/h)];
+R0 = [linspace(8, 7, 7/h) linspace(7, 4.1, 7/h) linspace(4.1, 3.5, 7/h) linspace(3.5, 0.7, 7/h) ...
+      linspace(0.7, 0.55, 7/h) linspace(0.55, 0.6, 7/h) linspace(0.6, 0.6, 4/h) linspace(1.5, 1.8, 10/h) ...
+      linspace(1.8, 1.8, T/h+1-(8*7+horizon-detection_time)/h) linspace(2.5, 2.5, (horizon-detection_time)/h)];
 mu_covid_pdf=gampdf(0:h:omega, 7.2734, 1.3240)';
 mu_matrix=zeros(size(mu_covid_pdf,1), 1, T/h+1);
 mu_matrix(:,1,:)=R0.*repmat(mu_covid_pdf/(sum(mu_covid_pdf)*h),1, T/h+1);
 mu_pessimistic=@()(mu_matrix);      % the input format for mu is described in the BranchingProcessSimulator.m
 
-[ActiveCases_pessimistic, ~, ~, TotalCases_pessimistic, ~] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu_pessimistic, 'GetAgeStructure', false);
+[ActiveCases_pessimistic, ~, ~, TotalCases_pessimistic, ~] = BranchingProcessSimulator(sim_num, T, h, S, H, U, Z_0, mu_pessimistic, Im, 'GetAgeStructure', false);
 NewCases_pessimistic = diff(TotalCases_pessimistic');
 % CuredCases = TotalCases - ActiveCases;
 

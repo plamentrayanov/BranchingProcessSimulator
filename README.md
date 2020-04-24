@@ -1,6 +1,12 @@
-# BranchingProcessSimulator
-LATEST UPDATE: COVID-19 models for Germany, France, Italy, Sweden, Indonesia and Bulgaria. Includes branching process simulation examples for the COVID-19 (SARS-CoV-2) epidemics. The model example for Indonesia includes immigration. The branching processes are alternative to the classical epidemics model like SEIR. Note that the code uses parallel computing and the more CPU cores you have, the more RAM you need. Make sure you have enough RAM to run the simulations on all cores!
+# Latest updates
+COVID-19 models for Germany, France, Italy, Sweden, Ukraine, Indonesia and Bulgaria. Includes branching process simulation examples for the COVID-19 (SARS-CoV-2) epidemics. The model examples for Ukraine, Indonesia and Bulgaria include an example immigration model. The branching processes are alternative to the classical epidemics model like SEIR. Note that the code uses parallel computing and the more CPU cores you have, the more RAM you need. Make sure you have enough RAM to run the simulations on all cores!
+The model parameters are fitted to explain the history of the epidemics so far, but do not claim to be the only possible explanation for what happend as the estimation of some parameters is quite difficult from the available data. The user may enter their hypothesis on the different parameters of the process and see how it affects the model. There are 3 scenarios for the future epidemics development for each country:
+1. No change in R0. The value of R0 from the last weeks is taken as a constant for the future development.
+2. Decrease in R0, which is more optimistic scenario from what we are currently experiencing.
+3. Increase in R0, which is more pessimistic scenario from what we are currently experiencing.
+Note: The properties that define the virus are the same for all examples. The changes in R0 and Immigration models are different, to fit the observations in each country.
 
+# BranchingProcessSimulator
 Simulates multi-type Galton-Watson, Bellman-Harris and Crump-Mode-Jagers branching processes with immigration - in constant, varying or random environment. The process is allowed to start from a random number of particles on different ages. The mutation probabilities are also allowed to be random. The features and restrictions of the simulation method are described below:
 
 FEATURES

@@ -6,7 +6,7 @@ The model parameters are fitted to explain the history of the epidemics so far, 
 3. Increase in R0, which is more pessimistic scenario from what we are currently experiencing.
 Note: The properties that define the virus are the same for all examples. The changes in R0 and Immigration models are different, to fit the observations in each country.
 
-To run the example model for <country>, set the matlab working directory to ./COVID19 Models/<country>/ and run COVID19_<country>.m script.
+To run the example model for "country", set the matlab working directory to ./COVID19 Models/"country"/ and run COVID19_"country".m script.
 The resulting figures are saved to ./COVID19 Models/<country>/Figures/
 
 # BranchingProcessSimulator

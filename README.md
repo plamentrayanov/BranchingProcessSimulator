@@ -11,7 +11,7 @@ Note: Data is obtained from https://opendata.ecdc.europa.eu/covid19/casedistribu
 
 To run the example model for "country", set the matlab working directory to ./COVID19 Models/"country"/ and run COVID19_"country".m script.
 
-The resulting figures are saved to ./COVID19 Models/<country>/Figures/ .
+The resulting figures are saved to ./COVID19 Models/"country"/Figures/ .
 
 # BranchingProcessSimulator
 Simulates multi-type Galton-Watson, Bellman-Harris and Crump-Mode-Jagers branching processes with immigration - in constant, varying or random environment. The process is allowed to start from a random number of particles on different ages. The mutation probabilities are also allowed to be random. The features and restrictions of the simulation method are described below:

@@ -4,7 +4,10 @@ The model parameters are fitted to explain the history of the epidemics so far, 
 1. No change in R0. The value of R0 from the last weeks is taken as a constant for the future development.
 2. Decrease in R0, which is more optimistic scenario from what we are currently experiencing.
 3. Increase in R0, which is more pessimistic scenario from what we are currently experiencing.
+
 Note: The properties that define the virus are the same for all examples. The changes in R0 and Immigration models are different, to fit the observations in each country.
+
+Note: Data is obtained from https://opendata.ecdc.europa.eu/covid19/casedistribution/csv
 
 To run the example model for "country", set the matlab working directory to ./COVID19 Models/"country"/ and run COVID19_"country".m script.
 

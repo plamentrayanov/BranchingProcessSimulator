@@ -53,7 +53,7 @@ function [Z, Z_types, Z_ages, Y, Y_types]=BranchingProcessSimulator(sim_num, T, 
 % DRAW_MU (Optional) could be a 2D matrix sized N_AGES x N_TYPES, containing the expected number of births a woman has until age x.
 % It could also be defined as a function that returns a matrix sized N_AGES x N_TYPES x (T/H+1), which could be constant
 % or random on every call. Use DRAW_MU=[] to model Galton-Watson and Bellman-Harris branching processes, for which
-% no point process is defined. 
+% no point process is defined. Note: choose h and mu such that mu(i,j,t)*h < 1 for all i,j,t!
 %
 % DRAW_IM (Optional) could be a 2D matrix sized N_AGES x N_TYPES, containing the number of immigrants on all ages by type.
 % It could also be defined as a function that returns a matrix sized N_AGES x N_TYPES x (T/H+1), which could be constant
@@ -184,7 +184,7 @@ parfor ind=1:sim_num
                         N(i+1,j,t+1)=N(i,j,t)-deaths;   % the ones that survived get to be older by h
                         births_by_types = mnrnd_large(births, U(:,j,t)',1, Results.approx_limit);
                         N(1,:,t+1)=N(1,:,t+1) + births_by_types;     % simulate the mutations to other types
-                        BirthsByTypesTotal(j, t) = BirthsByTypesTotal(j, t) + births_by_types;
+                        BirthsByTypesTotal(j, t+1) = BirthsByTypesTotal(j, t+1) + births_by_types;
                     end
                 end
             end

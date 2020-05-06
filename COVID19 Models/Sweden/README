@@ -1,8 +1,0 @@
-This example is intended to show the use of General Branching Processes as a model of epidemics. 
-It does not claim it will predict accurately the future development of the epidemics as the model is sensitive to many parameters that are difficult to measure and require more data. 
-However, the model seems useful for showing the impact of different model inputs to the epidemics' development and could be useful for understanding the dynamics of the virus.
-Some of the input parameters are taken from articles about the virus and some estimated based on what we observe as numbers in Italy.
-
-If you want to update the data, first download the newest data from https://opendata.ecdc.europa.eu/covid19/casedistribution/csv  and put it in data.csv file.
-The example is country specific, so for another country you need to change some of the parameters of the model!
-As new data is comming constantly you may need to adjust the parameters to fit the new data, e.g. the value of R0, which changes dynamically.

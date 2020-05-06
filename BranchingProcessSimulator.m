@@ -133,6 +133,18 @@ if getAgeStructure      % setting it to false, saves RAM, as Z_age requires a lo
 else
     Z_ages=[];
 end
+
+%% prepare the progressbar
+h_waitbar = waitbar(0, {'\bf{Simulations in progress...}', 'Time passed: 0 mins.', 'ETA: NA mins.'}, 'Visible', 'off', 'Name', 'Simulation Progress');
+h_waitbar.Children.FontSize=12;
+h_waitbar.Position = [h_waitbar.Position(1) h_waitbar.Position(2) h_waitbar.Position(3) h_waitbar.Position(4)*1.3];
+h_waitbar.Visible='on';
+q = parallel.pool.DataQueue;
+afterEach(q, @(ind)(updateProgressbar(ind, sim_num, h_waitbar, false)));
+% initialize the persistent variables before entering the parfor loop
+updateProgressbar(0, sim_num, h_waitbar, true);
+
+%% start the simulation parfor loop
 parfor ind=1:sim_num
     % for every simulation path, before simulating the branching process, generate simulation paths of the probability 
     % laws that determine the branching process properties. Later they are used for the branching process simulation.
@@ -140,12 +152,9 @@ parfor ind=1:sim_num
     H=Results.draw_H();
     U=Results.draw_U();
     Z_0=Results.draw_Z_0();
-    if ~isempty(Results.draw_mu)    % draw mu if it is specified in the input, i.e. the process is general branching process
-        mu=Results.draw_mu(); 
-    end
-    if ~isempty(Results.draw_Im)    % draw Im if it is specified in the input
-        Im=Results.draw_Im(); 
-    end
+    
+    mu=Results.draw_mu();   % could be empty
+    Im=Results.draw_Im();   % could be empty
     
     % initialize the array in which we store the age structure of the
     % population. Instead of saving it for every simulation and returning it as output, here we
@@ -161,19 +170,19 @@ parfor ind=1:sim_num
     BirthsByTypesTotal(:,1) = sum(N(:,:,1));
     
     for t=1:T/h       % go through time
-        if ~isempty(Results.draw_Im)  % add immigration at the beginning of the time interval 
+        if ~isempty(Im)  % add immigration at the beginning of the time interval 
             % (this also allows the initial population to be defined as immigrants at time 0)
             N(:,:,t)=N(:,:,t)+Im(:,:,t);
             BirthsByTypesTotal(:,t) = BirthsByTypesTotal(:,t) + sum(Im(:,:,t));
         end
         % if there is at least one particle of any type at time t, simulate for t+h
-        if any(any(N(:,:,t))) || ~isempty(Results.draw_Im)
+        if any(any(N(:,:,t))) || ~isempty(Im)
             for i=1:size(N,1)-1    % for each age
                 for j=1:size(N,2)  % for each type of particle
                     if N(i,j,t)~=0 && S(i,j,t)~=0   % if no particles of that type are alive, no need to simulate their deaths
                         % simulate the number of deaths at time t
                         deaths=N(i,j,t)-binornd_large(N(i,j,t), S(i+1,j,t)/S(i,j,t), Results.approx_limit);
-                        if isempty(Results.draw_mu)     % assumes the particle splits at its death if mu is unspecified
+                        if isempty(mu)     % assumes the particle splits at its death if mu is unspecified
                             % BGW, BH branching process - the births happen when death occures
                             births=mnrnd_large(deaths, H(:,j,t)',1, Results.approx_limit)*(0:(length(H(:,j,t))-1))';
                         else
@@ -198,9 +207,18 @@ parfor ind=1:sim_num
     end
     Z_types(ind, :, :)=sum(N,1);  % sum of all individuals by type (no age information)
     Y_types(ind, :, :)=cumsum(BirthsByTypesTotal);      % total progeny / total births by types, including immigration
+    
+    if any(isnan(Y_types(ind, :, :))) || any(isnan(Z_types(ind, :, :)))
+        error('Output contains NaNs! Check the given input probabilities are correct and try a smaller h.')
+    end
+    % send info to the progressbar
+    send(q, ind);
 end
 Z=squeeze(sum(Z_types, 2));     % sum of all individuals, no age or type information
 Y=squeeze(sum(Y_types, 2));     % sum of all individuals, no age or type information
+
+% close the progressbar
+delete(h_waitbar);
 end
 
 %% private functions used by the simulator
@@ -218,8 +236,8 @@ validate_ProbabilityMatrix=@(x)(isnumeric(x) && all(x(:)>=0 & x(:)<=1));
 p.addRequired('draw_H', @(x)(validate_ProbabilityMatrix(x) || (isa(x,'function_handle') && isnumeric(x()))));
 p.addRequired('draw_U', @(x)(validate_ProbabilityMatrix(x) || (isa(x,'function_handle') && isnumeric(x()))));
 p.addRequired('draw_Z_0', @(x)((isnumeric(x) && all(x(:)>=0 & mod(x(:),1)==0)) || (isa(x,'function_handle') && isnumeric(x()))));
-p.addOptional('draw_mu', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0)) || ...
-    (isa(x,'function_handle') && isnumeric(x()))));
+p.addOptional('draw_mu', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0) && all(x(:)*h<=1)) || ...
+    (isa(x,'function_handle') && isnumeric(x()) && all(all(x()*h<=1)) && all(all(x()*h>=0)) )));
 p.addOptional('draw_Im', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0 & mod(x(:),1)==0)) || ...
     (isa(x,'function_handle') && isnumeric(x()))));
 p.addOptional('approx_limit', 20, @(x)(isnumeric(x) && isscalar(x) && x>0)); % check if T is a positive number
@@ -303,4 +321,23 @@ function res=mnrnd_large(N, p, v, approx_limit)
         Sigma=diag(p_pos)-p_pos'*p_pos;
         res(i_pos)=round(sqrt(N)*mvnrnd(sqrt(N)*p_pos, Sigma, v));
     end
+end
+
+function updateProgressbar(~, sim_num, h_progressbar, run_init)
+    persistent p;
+    persistent t_start;
+    if run_init
+        p=0;
+        t_start = clock();
+    end
+    t_passed = etime(clock, t_start)/60;    % in minutes
+    waitbar(p/sim_num, h_progressbar);
+    if p>=2
+        eta = t_passed/p * (sim_num-p);
+        h_progressbar.Children.Title.String = {strcat('\bf{Simulations in progress...(', sprintf('%0.0f', p), '/', sprintf('%0.0f', sim_num), ')}'), strcat('Time passed: ', sprintf('%0.2f', t_passed), ' mins.'), strcat('ETA: ', sprintf('%0.2f', eta), ' mins.')};
+    else
+        h_progressbar.Children.Title.String = {'\bf{Simulations in progress...}', strcat('Time passed: ', sprintf('%0.2f', t_passed), ' mins.'), strcat('ETA: NA mins.')};
+    end
+    p=p+1;
+    drawnow;
 end

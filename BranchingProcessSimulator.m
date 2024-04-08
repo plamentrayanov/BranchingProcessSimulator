@@ -173,7 +173,7 @@ parfor ind=1:sim_num
         if ~isempty(Im)  % add immigration at the beginning of the time interval 
             % (this also allows the initial population to be defined as immigrants at time 0)
             N(:,:,t)=N(:,:,t)+Im(:,:,t);
-            BirthsByTypesTotal(:,t) = BirthsByTypesTotal(:,t) + sum(Im(:,:,t));
+            BirthsByTypesTotal(:,t) = BirthsByTypesTotal(:,t) + sum(Im(:,:,t))';
         end
         % if there is at least one particle of any type at time t, simulate for t+h
         if any(any(N(:,:,t))) || ~isempty(Im)
@@ -193,7 +193,7 @@ parfor ind=1:sim_num
                         N(i+1,j,t+1)=N(i,j,t)-deaths;   % the ones that survived get to be older by h
                         births_by_types = mnrnd_large(births, U(:,j,t)',1, Results.approx_limit);
                         N(1,:,t+1)=N(1,:,t+1) + births_by_types;     % simulate the mutations to other types
-                        BirthsByTypesTotal(j, t+1) = BirthsByTypesTotal(j, t+1) + births_by_types;
+                        BirthsByTypesTotal(:, t+1) = BirthsByTypesTotal(:, t+1) + births_by_types';
                     end
                 end
             end
@@ -208,7 +208,7 @@ parfor ind=1:sim_num
     Z_types(ind, :, :)=sum(N,1);  % sum of all individuals by type (no age information)
     Y_types(ind, :, :)=cumsum(BirthsByTypesTotal);      % total progeny / total births by types, including immigration
     
-    if any(isnan(Y_types(ind, :, :))) || any(isnan(Z_types(ind, :, :)))
+    if any(any(isnan(Y_types(ind, :, :)))) || any(any(isnan(Z_types(ind, :, :))))
         error('Output contains NaNs! Check the given input probabilities are correct and try a smaller h.')
     end
     % send info to the progressbar
@@ -237,7 +237,7 @@ p.addRequired('draw_H', @(x)(validate_ProbabilityMatrix(x) || (isa(x,'function_h
 p.addRequired('draw_U', @(x)(validate_ProbabilityMatrix(x) || (isa(x,'function_handle') && isnumeric(x()))));
 p.addRequired('draw_Z_0', @(x)((isnumeric(x) && all(x(:)>=0 & mod(x(:),1)==0)) || (isa(x,'function_handle') && isnumeric(x()))));
 p.addOptional('draw_mu', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0) && all(x(:)*h<=1)) || ...
-    (isa(x,'function_handle') && isnumeric(x()) && all(all(x()*h<=1)) && all(all(x()*h>=0)) )));
+    (isa(x,'function_handle') && isnumeric(x()) && all(all(all(x()*h<=1))) && all(all(all(x()*h>=0))) )));
 p.addOptional('draw_Im', [], @(x)((isnumeric(x) && ismatrix(x) && all(x(:)>=0 & mod(x(:),1)==0)) || ...
     (isa(x,'function_handle') && isnumeric(x()))));
 p.addOptional('approx_limit', 20, @(x)(isnumeric(x) && isscalar(x) && x>0)); % check if T is a positive number
